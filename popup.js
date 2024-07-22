@@ -33,7 +33,7 @@ function createBookmarkElement(bookmark, index) {
   bookmarkInfo.appendChild(status);
 
   const img = document.createElement("img");
-  img.src = bookmark.logo || "images/default-icon.png";
+  img.src = bookmark.logo || "images/default-icon.svg";
   img.alt = "Bookmark icon";
   bookmarkInfo.appendChild(img);
 
