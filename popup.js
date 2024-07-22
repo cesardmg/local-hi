@@ -32,12 +32,14 @@ function createBookmarkElement(bookmark, index) {
 
   const img = document.createElement('img');
   img.src = bookmark.logo || 'images/default-icon.svg';
+  img.alt = 'Bookmark icon';
   bookmarkInfo.appendChild(img);
 
   const a = document.createElement('a');
   a.href = '#';
   a.textContent = bookmark.address;
-  a.addEventListener('click', function() {
+  a.addEventListener('click', function(e) {
+    e.preventDefault();
     chrome.tabs.create({ url: 'http://' + bookmark.address });
   });
   bookmarkInfo.appendChild(a);
@@ -75,8 +77,8 @@ function showError(message) {
     top: 20px;
     left: 50%;
     transform: translateX(-50%);
-    background-color: #f8d7da;
-    color: #721c24;
+    background-color: var(--error-bg);
+    color: var(--error-text);
     padding: 10px;
     border-radius: 5px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
