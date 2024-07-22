@@ -40,9 +40,13 @@ function createBookmarkElement(bookmark, index) {
   const a = document.createElement("a");
   a.href = "#";
   a.textContent = bookmark.address;
+  a.title = bookmark.address; // Add title for full address on hover
   a.addEventListener("click", function (e) {
     e.preventDefault();
-    chrome.tabs.create({ url: "http://" + bookmark.address });
+    const url = bookmark.address.startsWith("http")
+      ? bookmark.address
+      : "http://" + bookmark.address;
+    chrome.tabs.create({ url: url });
   });
   bookmarkInfo.appendChild(a);
 
@@ -108,7 +112,7 @@ function addBookmark(e) {
 
     // Check for duplicate address
     if (bookmarks.some((bookmark) => bookmark.address === address)) {
-      showError("This localhost address already exists!");
+      showError("This address already exists!");
       return;
     }
 
@@ -147,7 +151,7 @@ function saveEditedBookmark() {
           index !== currentEditIndex && bookmark.address === address
       )
     ) {
-      showError("This localhost address already exists!");
+      showError("This address already exists!");
       return;
     }
 
@@ -178,7 +182,8 @@ function deleteBookmark(index) {
 }
 
 function checkStatus(address, statusElement) {
-  fetch("http://" + address, { mode: "no-cors" })
+  const url = address.startsWith("http") ? address : "http://" + address;
+  fetch(url, { mode: "no-cors" })
     .then(() => {
       statusElement.classList.add("online");
       statusElement.classList.remove("offline");
