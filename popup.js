@@ -68,6 +68,32 @@ function createBookmarkElement(bookmark, index) {
   return div;
 }
 
+function showError(message) {
+  const errorDialog = document.createElement('div');
+  errorDialog.style.cssText = `
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    z-index: 1000;
+    font-size: 14px;
+    text-align: center;
+  `;
+
+  errorDialog.textContent = message;
+
+  document.body.appendChild(errorDialog);
+
+  setTimeout(() => {
+    errorDialog.remove();
+  }, 3000);
+}
+
 function addBookmark(e) {
   e.preventDefault();
   const address = document.getElementById('address').value;
@@ -78,7 +104,7 @@ function addBookmark(e) {
     
     // Check for duplicate address
     if (bookmarks.some(bookmark => bookmark.address === address)) {
-      alert('This localhost address already exists!');
+      showError('This localhost address already exists!');
       return;
     }
     
@@ -112,7 +138,7 @@ function saveEditedBookmark() {
     
     // Check for duplicate address, excluding the current bookmark
     if (bookmarks.some((bookmark, index) => index !== currentEditIndex && bookmark.address === address)) {
-      alert('This localhost address already exists!');
+      showError('This localhost address already exists!');
       return;
     }
     
