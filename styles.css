@@ -13,14 +13,14 @@
 /* Dark mode styles */
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg-color: #333333;
-    --text-color: #ffffff;
-    --border-color: #555555;
-    --button-bg: #444444;
+    --bg-color: #121212;
+    --text-color: #e0e0e0;
+    --border-color: #333333;
+    --button-bg: #1e1e1e;
     --button-text: #ffffff;
-    --error-bg: #472f31;
+    --error-bg: #350c0f;
     --error-text: #f1b0b7;
-    --placeholder-color: rgba(255, 255, 255, 0.6);
+    --placeholder-color: rgba(255, 255, 255, 0.5);
   }
 }
 
@@ -100,6 +100,7 @@ h1 {
   cursor: pointer;
   font-size: 12px;
   font-family: "Montserrat", sans-serif;
+  border-radius: 4px;
 }
 
 form {
@@ -144,4 +145,17 @@ button {
 #editForm h2 {
   margin-top: 20px;
   font-weight: 700;
+}
+
+/* Hover effects for buttons */
+button:hover,
+.bookmark-actions button:hover {
+  opacity: 0.9;
+}
+
+/* Focus styles for better accessibility */
+button:focus,
+input:focus {
+  outline: 2px solid var(--text-color);
+  outline-offset: 2px;
 }
