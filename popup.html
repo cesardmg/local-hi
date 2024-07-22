@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Localhost Bookmarks</title>
+  <style>
+    body { width: 300px; padding: 10px; }
+    .bookmark { display: flex; align-items: center; margin-bottom: 10px; }
+    .bookmark img { width: 16px; height: 16px; margin-right: 10px; }
+    .status { width: 10px; height: 10px; border-radius: 50%; margin-right: 10px; }
+    .online { background-color: green; }
+    .offline { background-color: red; }
+  </style>
+</head>
+<body>
+  <h2>Localhost Bookmarks</h2>
+  <div id="bookmarks"></div>
+  <form id="addForm">
+    <input type="text" id="address" placeholder="Enter localhost address" required>
+    <input type="text" id="logo" placeholder="Enter logo URL">
+    <button type="submit">Add</button>
+  </form>
+  <script src="popup.js"></script>
+</body>
+</html>
