@@ -3,15 +3,50 @@
 <head>
   <title>Localhost Bookmarks</title>
   <style>
-    body { width: 300px; padding: 10px; }
-    .bookmark { display: flex; align-items: center; margin-bottom: 10px; }
-    .bookmark img { width: 16px; height: 16px; margin-right: 10px; }
-    .status { width: 10px; height: 10px; border-radius: 50%; margin-right: 10px; }
+    body { width: 300px; padding: 10px; font-family: Arial, sans-serif; }
+    .bookmark { 
+      display: flex; 
+      align-items: center; 
+      margin-bottom: 10px;
+      justify-content: space-between;
+    }
+    .bookmark-info {
+      display: flex;
+      align-items: center;
+    }
+    .bookmark img { 
+      width: 16px; 
+      height: 16px; 
+      margin-right: 10px; 
+    }
+    .status { 
+      width: 10px; 
+      height: 10px; 
+      border-radius: 50%; 
+      margin-right: 10px; 
+    }
     .online { background-color: green; }
     .offline { background-color: red; }
     .edit-mode { display: none; }
     .edit-mode.active { display: block; }
     .view-mode.inactive { display: none; }
+    .bookmark-actions {
+      display: flex;
+      gap: 5px;
+    }
+    .bookmark-actions button {
+      padding: 2px 5px;
+      font-size: 0.8em;
+    }
+    #addForm {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      margin-top: 10px;
+    }
+    #addForm input, #addForm button {
+      margin-bottom: 5px;
+    }
   </style>
 </head>
 <body>

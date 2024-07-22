@@ -20,43 +20,53 @@ function loadBookmarks() {
 }
 
 function createBookmarkElement(bookmark, index) {
-  const div = document.createElement('div');
-  div.className = 'bookmark';
+    const div = document.createElement('div');
+    div.className = 'bookmark';
+    
+    const bookmarkInfo = document.createElement('div');
+    bookmarkInfo.className = 'bookmark-info';
+    
+    const status = document.createElement('div');
+    status.className = 'status';
+    bookmarkInfo.appendChild(status);
   
-  const status = document.createElement('div');
-  status.className = 'status';
-  div.appendChild(status);
-
-  const img = document.createElement('img');
-  img.src = bookmark.logo || 'images/default-icon.svg';
-  div.appendChild(img);
-
-  const a = document.createElement('a');
-  a.href = '#';
-  a.textContent = bookmark.address;
-  a.addEventListener('click', function() {
-    chrome.tabs.create({ url: 'http://' + bookmark.address });
-  });
-  div.appendChild(a);
-
-  const editButton = document.createElement('button');
-  editButton.textContent = 'Edit';
-  editButton.addEventListener('click', function() {
-    startEdit(index);
-  });
-  div.appendChild(editButton);
-
-  const deleteButton = document.createElement('button');
-  deleteButton.textContent = 'Delete';
-  deleteButton.addEventListener('click', function() {
-    deleteBookmark(index);
-  });
-  div.appendChild(deleteButton);
-
-  checkStatus(bookmark.address, status);
-
-  return div;
-}
+    const img = document.createElement('img');
+    img.src = bookmark.logo || 'images/default-icon.svg';
+    bookmarkInfo.appendChild(img);
+  
+    const a = document.createElement('a');
+    a.href = '#';
+    a.textContent = bookmark.address;
+    a.addEventListener('click', function() {
+      chrome.tabs.create({ url: 'http://' + bookmark.address });
+    });
+    bookmarkInfo.appendChild(a);
+  
+    div.appendChild(bookmarkInfo);
+  
+    const bookmarkActions = document.createElement('div');
+    bookmarkActions.className = 'bookmark-actions';
+  
+    const editButton = document.createElement('button');
+    editButton.textContent = 'Edit';
+    editButton.addEventListener('click', function() {
+      startEdit(index);
+    });
+    bookmarkActions.appendChild(editButton);
+  
+    const deleteButton = document.createElement('button');
+    deleteButton.textContent = 'Delete';
+    deleteButton.addEventListener('click', function() {
+      deleteBookmark(index);
+    });
+    bookmarkActions.appendChild(deleteButton);
+  
+    div.appendChild(bookmarkActions);
+  
+    checkStatus(bookmark.address, status);
+  
+    return div;
+  }
 
 function addBookmark(e) {
   e.preventDefault();
