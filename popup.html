@@ -9,6 +9,9 @@
     .status { width: 10px; height: 10px; border-radius: 50%; margin-right: 10px; }
     .online { background-color: green; }
     .offline { background-color: red; }
+    .edit-mode { display: none; }
+    .edit-mode.active { display: block; }
+    .view-mode.inactive { display: none; }
   </style>
 </head>
 <body>
@@ -19,6 +22,13 @@
     <input type="text" id="logo" placeholder="Enter logo URL">
     <button type="submit">Add</button>
   </form>
+  <div id="editForm" class="edit-mode">
+    <h3>Edit Bookmark</h3>
+    <input type="text" id="editAddress" placeholder="Enter localhost address" required>
+    <input type="text" id="editLogo" placeholder="Enter logo URL">
+    <button id="saveEdit">Save</button>
+    <button id="cancelEdit">Cancel</button>
+  </div>
   <script src="popup.js"></script>
 </body>
 </html>
