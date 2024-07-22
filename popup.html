@@ -3,7 +3,14 @@
 <head>
   <title>Localhost Bookmarks</title>
   <style>
-    body { width: 300px; padding: 10px; font-family: Arial, sans-serif; }
+    body { 
+      width: 300px; 
+      padding: 10px; 
+      font-family: Arial, sans-serif; 
+    }
+    h2 {
+      margin-top: 0;
+    }
     .bookmark { 
       display: flex; 
       align-items: center; 
@@ -13,6 +20,7 @@
     .bookmark-info {
       display: flex;
       align-items: center;
+      flex-grow: 1;
     }
     .bookmark img { 
       width: 16px; 
@@ -27,25 +35,40 @@
     }
     .online { background-color: green; }
     .offline { background-color: red; }
-    .edit-mode { display: none; }
-    .edit-mode.active { display: block; }
-    .view-mode.inactive { display: none; }
     .bookmark-actions {
       display: flex;
       gap: 5px;
     }
-    .bookmark-actions button {
-      padding: 2px 5px;
-      font-size: 0.8em;
+    button {
+      padding: 5px 10px;
+      font-size: 14px;
+      cursor: pointer;
     }
-    #addForm {
+    #addForm, #editForm {
       display: flex;
       flex-direction: column;
-      gap: 5px;
-      margin-top: 10px;
+      gap: 10px;
+      margin-top: 15px;
     }
-    #addForm input, #addForm button {
-      margin-bottom: 5px;
+    input {
+      padding: 5px;
+      font-size: 14px;
+    }
+    #editForm {
+      display: none;
+    }
+    #editForm.active {
+      display: flex;
+    }
+    .form-row {
+      display: flex;
+      gap: 5px;
+    }
+    .form-row input {
+      flex-grow: 1;
+    }
+    .form-row button {
+      white-space: nowrap;
     }
   </style>
 </head>
@@ -53,16 +76,22 @@
   <h2>Localhost Bookmarks</h2>
   <div id="bookmarks"></div>
   <form id="addForm">
-    <input type="text" id="address" placeholder="Enter localhost address" required>
-    <input type="text" id="logo" placeholder="Enter logo URL">
-    <button type="submit">Add</button>
+    <div class="form-row">
+      <input type="text" id="address" placeholder="Enter localhost address" required>
+    </div>
+    <div class="form-row">
+      <input type="text" id="logo" placeholder="Enter logo URL">
+      <button type="submit">Add</button>
+    </div>
   </form>
-  <div id="editForm" class="edit-mode">
+  <div id="editForm">
     <h3>Edit Bookmark</h3>
     <input type="text" id="editAddress" placeholder="Enter localhost address" required>
     <input type="text" id="editLogo" placeholder="Enter logo URL">
-    <button id="saveEdit">Save</button>
-    <button id="cancelEdit">Cancel</button>
+    <div class="form-row">
+      <button id="saveEdit">Save</button>
+      <button id="cancelEdit">Cancel</button>
+    </div>
   </div>
   <script src="popup.js"></script>
 </body>
