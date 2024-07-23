@@ -7,6 +7,9 @@ document.addEventListener("DOMContentLoaded", function () {
     .getElementById("saveEdit")
     .addEventListener("click", saveEditedBookmark);
   document.getElementById("cancelEdit").addEventListener("click", cancelEdit);
+  document
+    .getElementById("settingsButton")
+    .addEventListener("click", showSettings);
 });
 
 function loadBookmarks() {
@@ -364,5 +367,65 @@ function checkStatus(address, statusElement) {
         statusElement.classList.add("offline");
         statusElement.classList.remove("online", "unknown");
       }
+    });
+}
+
+function showSettings() {
+  const overlay = document.createElement("div");
+  overlay.className = "overlay";
+
+  const settingsDialog = document.createElement("div");
+  settingsDialog.className = "confirm-dialog";
+
+  settingsDialog.innerHTML = `
+    <h2>Settings</h2>
+    <button id="deleteAllBookmarks" class="delete">Delete All Bookmarks</button>
+    <button id="closeSettings">Close</button>
+  `;
+
+  overlay.appendChild(settingsDialog);
+  document.body.appendChild(overlay);
+
+  document
+    .getElementById("deleteAllBookmarks")
+    .addEventListener("click", deleteAllBookmarks);
+
+  document
+    .getElementById("closeSettings")
+    .addEventListener("click", function () {
+      overlay.remove();
+    });
+}
+
+function deleteAllBookmarks() {
+  const confirmOverlay = document.createElement("div");
+  confirmOverlay.className = "overlay";
+
+  const confirmDialog = document.createElement("div");
+  confirmDialog.className = "confirm-dialog";
+
+  confirmDialog.innerHTML = `
+    <p>Are you sure you want to delete all bookmarks? This action cannot be undone.</p>
+    <button id="confirmDeleteAll" class="delete">Delete All</button>
+    <button id="cancelDeleteAll">Cancel</button>
+  `;
+
+  confirmOverlay.appendChild(confirmDialog);
+  document.body.appendChild(confirmOverlay);
+
+  document
+    .getElementById("confirmDeleteAll")
+    .addEventListener("click", function () {
+      chrome.storage.sync.set({ bookmarks: [] }, function () {
+        loadBookmarks();
+        confirmOverlay.remove();
+        document.querySelector(".overlay").remove(); // Close settings dialog
+      });
+    });
+
+  document
+    .getElementById("cancelDeleteAll")
+    .addEventListener("click", function () {
+      confirmOverlay.remove();
     });
 }
