@@ -12,11 +12,11 @@ document.addEventListener("DOMContentLoaded", function () {
 function loadBookmarks() {
   chrome.storage.sync.get(["bookmarks"], function (result) {
     const bookmarks = result.bookmarks || [];
-    const bookmarksContainer = document.getElementById("bookmarks-container");
-    bookmarksContainer.innerHTML = "";
+    const bookmarksDiv = document.getElementById("bookmarks");
+    bookmarksDiv.innerHTML = "";
     bookmarks.forEach(function (bookmark, index) {
       const div = createBookmarkElement(bookmark, index);
-      bookmarksContainer.appendChild(div);
+      bookmarksDiv.appendChild(div);
     });
   });
 }
@@ -24,13 +24,6 @@ function loadBookmarks() {
 function createBookmarkElement(bookmark, index) {
   const div = document.createElement("div");
   div.className = "bookmark";
-  div.dataset.index = index;
-
-  const dragHandle = document.createElement("div");
-  dragHandle.className = "drag-handle";
-  dragHandle.innerHTML = "&#9776;"; // Unicode for hamburger icon
-  dragHandle.draggable = true;
-  div.appendChild(dragHandle);
 
   const bookmarkInfo = document.createElement("div");
   bookmarkInfo.className = "bookmark-info";
@@ -47,7 +40,7 @@ function createBookmarkElement(bookmark, index) {
   const a = document.createElement("a");
   a.href = "#";
   a.textContent = bookmark.address;
-  a.title = bookmark.address;
+  a.title = bookmark.address; // Add title for full address on hover
   a.addEventListener("click", function (e) {
     e.preventDefault();
     const url = bookmark.address.startsWith("http")
@@ -80,107 +73,7 @@ function createBookmarkElement(bookmark, index) {
 
   checkStatus(bookmark.address, status);
 
-  // Add drag and drop event listeners to the drag handle
-  dragHandle.addEventListener("dragstart", dragStart);
-  div.addEventListener("dragover", dragOver);
-  div.addEventListener("dragleave", dragLeave);
-  div.addEventListener("drop", drop);
-  div.addEventListener("dragend", dragEnd);
-
   return div;
-}
-
-function dragStart(e) {
-  // Set the dragged element to the parent bookmark div
-  e.dataTransfer.setData("text/plain", e.target.parentNode.dataset.index);
-  e.target.parentNode.classList.add("dragging");
-
-  // Create a custom drag image
-  const dragImage = e.target.parentNode.cloneNode(true);
-  dragImage.style.width = `${e.target.parentNode.offsetWidth}px`; // Set the width to match the original element
-  dragImage.style.height = `${e.target.parentNode.offsetHeight}px`; // Set the height to match the original element
-  dragImage.style.opacity = "0.7";
-  dragImage.classList.add("drag-image");
-
-  // Remove the status indicator from the drag image
-  const statusElement = dragImage.querySelector(".status");
-  if (statusElement) {
-    statusElement.remove();
-  }
-
-  // Hide the drag image element
-  dragImage.style.position = "absolute";
-  dragImage.style.top = "-1000px";
-  document.body.appendChild(dragImage);
-
-  // Set the custom drag image
-  e.dataTransfer.setDragImage(dragImage, 0, 0);
-
-  // Remove the drag image element after the drag operation
-  setTimeout(() => {
-    document.body.removeChild(dragImage);
-  }, 0);
-}
-
-function dragOver(e) {
-  e.preventDefault();
-  const draggingElement = document.querySelector(".dragging");
-  const currentElement = e.target.closest(".bookmark");
-  if (currentElement && draggingElement !== currentElement) {
-    const container = document.getElementById("bookmarks-container");
-    const afterElement = getDragAfterElement(container, e.clientY);
-    if (afterElement) {
-      container.insertBefore(draggingElement, afterElement);
-    } else {
-      container.appendChild(draggingElement);
-    }
-  }
-}
-
-function dragLeave(e) {
-  e.preventDefault();
-}
-
-function drop(e) {
-  e.preventDefault();
-}
-
-function dragEnd(e) {
-  e.target.parentNode.classList.remove("dragging");
-  saveNewOrder();
-}
-
-function getDragAfterElement(container, y) {
-  const draggableElements = [
-    ...container.querySelectorAll(".bookmark:not(.dragging)"),
-  ];
-  return draggableElements.reduce(
-    (closest, child) => {
-      const box = child.getBoundingClientRect();
-      const offset = y - box.top - box.height / 2;
-      if (offset < 0 && offset > closest.offset) {
-        return { offset: offset, element: child };
-      } else {
-        return closest;
-      }
-    },
-    { offset: Number.NEGATIVE_INFINITY }
-  ).element;
-}
-
-function saveNewOrder() {
-  const bookmarkElements = document.querySelectorAll(".bookmark");
-  const newOrder = Array.from(bookmarkElements).map((el) =>
-    parseInt(el.dataset.index)
-  );
-
-  chrome.storage.sync.get(["bookmarks"], function (result) {
-    const bookmarks = result.bookmarks || [];
-    const reorderedBookmarks = newOrder.map((index) => bookmarks[index]);
-    chrome.storage.sync.set({ bookmarks: reorderedBookmarks }, function () {
-      loadBookmarks(); // Reload bookmarks to update indices
-    });
-  });
 }
 
 function showError(message) {
