@@ -46,7 +46,19 @@ function createBookmarkElement(bookmark, index) {
 
   const a = document.createElement("a");
   a.href = "#";
-  a.textContent = bookmark.address;
+  if (bookmark.name) {
+    const nameSpan = document.createElement("span");
+    nameSpan.className = "custom-name";
+    nameSpan.textContent = bookmark.name;
+    a.appendChild(nameSpan);
+
+    const addressSpan = document.createElement("span");
+    addressSpan.className = "address";
+    addressSpan.textContent = ` (${bookmark.address})`;
+    a.appendChild(addressSpan);
+  } else {
+    a.textContent = bookmark.address;
+  }
   a.title = bookmark.address;
   a.addEventListener("click", function (e) {
     e.preventDefault();
@@ -80,7 +92,7 @@ function createBookmarkElement(bookmark, index) {
 
   checkStatus(bookmark.address, status);
 
-  // Add drag and drop event listeners to the drag handle
+  // Add drag and drop event listeners
   dragHandle.addEventListener("dragstart", dragStart);
   div.addEventListener("dragover", dragOver);
   div.addEventListener("dragleave", dragLeave);
@@ -91,32 +103,26 @@ function createBookmarkElement(bookmark, index) {
 }
 
 function dragStart(e) {
-  // Set the dragged element to the parent bookmark div
   e.dataTransfer.setData("text/plain", e.target.parentNode.dataset.index);
   e.target.parentNode.classList.add("dragging");
 
-  // Create a custom drag image
   const dragImage = e.target.parentNode.cloneNode(true);
-  dragImage.style.width = `${e.target.parentNode.offsetWidth}px`; // Set the width to match the original element
-  dragImage.style.height = `${e.target.parentNode.offsetHeight}px`; // Set the height to match the original element
+  dragImage.style.width = `${e.target.parentNode.offsetWidth}px`;
+  dragImage.style.height = `${e.target.parentNode.offsetHeight}px`;
   dragImage.style.opacity = "0.7";
   dragImage.classList.add("drag-image");
 
-  // Remove the status indicator from the drag image
   const statusElement = dragImage.querySelector(".status");
   if (statusElement) {
     statusElement.remove();
   }
 
-  // Hide the drag image element
   dragImage.style.position = "absolute";
   dragImage.style.top = "-1000px";
   document.body.appendChild(dragImage);
 
-  // Set the custom drag image
   e.dataTransfer.setDragImage(dragImage, 0, 0);
 
-  // Remove the drag image element after the drag operation
   setTimeout(() => {
     document.body.removeChild(dragImage);
   }, 0);
@@ -178,7 +184,7 @@ function saveNewOrder() {
     const bookmarks = result.bookmarks || [];
     const reorderedBookmarks = newOrder.map((index) => bookmarks[index]);
     chrome.storage.sync.set({ bookmarks: reorderedBookmarks }, function () {
-      loadBookmarks(); // Reload bookmarks to update indices
+      loadBookmarks();
     });
   });
 }
@@ -241,21 +247,22 @@ function showDeleteConfirmation(index) {
 
 function addBookmark(e) {
   e.preventDefault();
+  const name = document.getElementById("name").value;
   const address = document.getElementById("address").value;
   const logo = document.getElementById("logo").value;
 
   chrome.storage.sync.get(["bookmarks"], function (result) {
     const bookmarks = result.bookmarks || [];
 
-    // Check for duplicate address
     if (bookmarks.some((bookmark) => bookmark.address === address)) {
       showError("This address already exists!");
       return;
     }
 
-    bookmarks.push({ address, logo });
+    bookmarks.push({ name, address, logo });
     chrome.storage.sync.set({ bookmarks }, function () {
       loadBookmarks();
+      document.getElementById("name").value = "";
       document.getElementById("address").value = "";
       document.getElementById("logo").value = "";
     });
@@ -266,6 +273,7 @@ function startEdit(index) {
   chrome.storage.sync.get(["bookmarks"], function (result) {
     const bookmarks = result.bookmarks || [];
     const bookmark = bookmarks[index];
+    document.getElementById("editName").value = bookmark.name || "";
     document.getElementById("editAddress").value = bookmark.address;
     document.getElementById("editLogo").value = bookmark.logo || "";
     document.getElementById("editForm").classList.add("active");
@@ -275,13 +283,13 @@ function startEdit(index) {
 }
 
 function saveEditedBookmark() {
+  const name = document.getElementById("editName").value;
   const address = document.getElementById("editAddress").value;
   const logo = document.getElementById("editLogo").value;
 
   chrome.storage.sync.get(["bookmarks"], function (result) {
     const bookmarks = result.bookmarks || [];
 
-    // Check for duplicate address, excluding the current bookmark
     if (
       bookmarks.some(
         (bookmark, index) =>
@@ -292,7 +300,7 @@ function saveEditedBookmark() {
       return;
     }
 
-    bookmarks[currentEditIndex] = { address, logo };
+    bookmarks[currentEditIndex] = { name, address, logo };
     chrome.storage.sync.set({ bookmarks }, function () {
       loadBookmarks();
       cancelEdit();
@@ -321,12 +329,10 @@ function checkStatus(address, statusElement) {
   if (address.startsWith("http://") || address.startsWith("https://")) {
     url = address;
   } else if (address.includes("://")) {
-    // For other protocols, we can't check status directly
     statusElement.classList.add("unknown");
     statusElement.classList.remove("online", "offline");
     return;
   } else {
-    // Assume http:// if no protocol is specified
     url = "http://" + address;
   }
 
@@ -342,7 +348,6 @@ function checkStatus(address, statusElement) {
       statusElement.classList.remove("offline", "unknown");
     })
     .catch(() => {
-      // If http fails, try https
       if (!address.startsWith("https://")) {
         fetch("https://" + address.replace(/^https?:\/\//, ""), {
           mode: "no-cors",
