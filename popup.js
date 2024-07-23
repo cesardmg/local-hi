@@ -65,7 +65,7 @@ function createBookmarkElement(bookmark, index) {
   const deleteButton = document.createElement("button");
   deleteButton.textContent = "Delete";
   deleteButton.addEventListener("click", function () {
-    deleteBookmark(index);
+    showDeleteConfirmation(index);
   });
   bookmarkActions.appendChild(deleteButton);
 
@@ -100,6 +100,36 @@ function showError(message) {
   setTimeout(() => {
     errorDialog.remove();
   }, 3000);
+}
+
+function showDeleteConfirmation(index) {
+  const overlay = document.createElement("div");
+  overlay.className = "overlay";
+
+  const confirmDialog = document.createElement("div");
+  confirmDialog.className = "confirm-dialog";
+
+  confirmDialog.innerHTML = `
+    <p>Are you sure you want to delete this bookmark?</p>
+    <button id="confirmDelete" class="delete">Delete</button>
+    <button id="cancelDelete">Cancel</button>
+  `;
+
+  overlay.appendChild(confirmDialog);
+  document.body.appendChild(overlay);
+
+  document
+    .getElementById("confirmDelete")
+    .addEventListener("click", function () {
+      deleteBookmark(index);
+      overlay.remove();
+    });
+
+  document
+    .getElementById("cancelDelete")
+    .addEventListener("click", function () {
+      overlay.remove();
+    });
 }
 
 function addBookmark(e) {
@@ -170,15 +200,13 @@ function cancelEdit() {
 }
 
 function deleteBookmark(index) {
-  if (confirm("Are you sure you want to delete this bookmark?")) {
-    chrome.storage.sync.get(["bookmarks"], function (result) {
-      const bookmarks = result.bookmarks || [];
-      bookmarks.splice(index, 1);
-      chrome.storage.sync.set({ bookmarks }, function () {
-        loadBookmarks();
-      });
+  chrome.storage.sync.get(["bookmarks"], function (result) {
+    const bookmarks = result.bookmarks || [];
+    bookmarks.splice(index, 1);
+    chrome.storage.sync.set({ bookmarks }, function () {
+      loadBookmarks();
     });
-  }
+  });
 }
 
 function checkStatus(address, statusElement) {

@@ -8,6 +8,7 @@
   --error-bg: #f8d7da;
   --error-text: #721c24;
   --placeholder-color: rgba(0, 0, 0, 0.6);
+  --overlay-bg: rgba(0, 0, 0, 0.5);
 }
 
 /* Dark mode styles */
@@ -21,6 +22,7 @@
     --error-bg: #350c0f;
     --error-text: #f1b0b7;
     --placeholder-color: rgba(255, 255, 255, 0.5);
+    --overlay-bg: rgba(0, 0, 0, 0.7);
   }
 }
 
@@ -29,22 +31,22 @@ body {
   color: var(--text-color);
   font-family: "Montserrat", sans-serif;
   margin: 0;
-  padding: 15px;
-  width: 300px;
+  padding: 20px;
+  width: 320px;
 }
 
 h1 {
   margin-top: 0;
+  margin-bottom: 20px;
   font-weight: 700;
 }
 
 .bookmark {
   border-bottom: 1px solid var(--border-color);
-  padding: 10px 0;
+  padding: 15px 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  flex-wrap: wrap; /* Allow wrapping for long addresses */
 }
 
 .bookmark-info {
@@ -52,8 +54,8 @@ h1 {
   align-items: center;
   flex-grow: 1;
   margin-right: 10px;
-  min-width: 0; /* Allow text to shrink */
-  overflow: hidden; /* Hide overflow */
+  min-width: 0;
+  overflow: hidden;
 }
 
 .status {
@@ -86,41 +88,44 @@ h1 {
 .bookmark-info a {
   color: var(--text-color);
   text-decoration: none;
-  font-size: 14px; /* Slightly reduced font size */
+  font-size: 14px;
   font-weight: 500;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 180px; /* Limit max width */
+  max-width: 180px;
 }
 
 .bookmark-actions {
   display: flex;
   align-items: center;
-  margin-top: 5px; /* Add some space if buttons wrap to next line */
 }
 
 .bookmark-actions button {
-  background-color: var(--button-bg);
-  color: var(--button-text);
+  background-color: transparent;
+  color: var(--text-color);
   border: none;
   padding: 5px 8px;
-  margin-left: 5px;
   cursor: pointer;
   font-size: 12px;
   font-family: "Montserrat", sans-serif;
-  border-radius: 4px;
+  opacity: 0.6;
+  transition: opacity 0.3s;
+}
+
+.bookmark-actions button:hover {
+  opacity: 1;
 }
 
 form {
-  margin-top: 15px;
+  margin-top: 20px;
 }
 
 input {
   width: 100%;
-  padding: 8px;
+  padding: 10px;
   margin-bottom: 10px;
-  background-color: var(--bg-color);
+  background-color: var(--button-bg);
   color: var(--text-color);
   border: 1px solid var(--border-color);
   border-radius: 4px;
@@ -136,11 +141,16 @@ button {
   background-color: var(--button-bg);
   color: var(--button-text);
   border: none;
-  padding: 8px 15px;
+  padding: 10px 15px;
   cursor: pointer;
   border-radius: 4px;
   font-family: "Montserrat", sans-serif;
   font-weight: 500;
+  transition: background-color 0.3s;
+}
+
+button:hover {
+  background-color: var(--border-color);
 }
 
 #editForm {
@@ -156,15 +166,40 @@ button {
   font-weight: 700;
 }
 
-/* Hover effects for buttons */
-button:hover,
-.bookmark-actions button:hover {
-  opacity: 0.9;
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--overlay-bg);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
 }
 
-/* Focus styles for better accessibility */
-button:focus,
-input:focus {
-  outline: 2px solid var(--text-color);
-  outline-offset: 2px;
+.confirm-dialog {
+  background-color: var(--bg-color);
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.confirm-dialog p {
+  margin-bottom: 20px;
+}
+
+.confirm-dialog button {
+  margin: 0 10px;
+}
+
+.confirm-dialog button.delete {
+  background-color: #f44336;
+  color: white;
+}
+
+.confirm-dialog button.delete:hover {
+  background-color: #d32f2f;
 }
