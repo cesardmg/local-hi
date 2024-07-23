@@ -12,11 +12,11 @@ document.addEventListener("DOMContentLoaded", function () {
 function loadBookmarks() {
   chrome.storage.sync.get(["bookmarks"], function (result) {
     const bookmarks = result.bookmarks || [];
-    const bookmarksDiv = document.getElementById("bookmarks");
-    bookmarksDiv.innerHTML = "";
+    const bookmarksContainer = document.getElementById("bookmarks-container");
+    bookmarksContainer.innerHTML = "";
     bookmarks.forEach(function (bookmark, index) {
       const div = createBookmarkElement(bookmark, index);
-      bookmarksDiv.appendChild(div);
+      bookmarksContainer.appendChild(div);
     });
   });
 }
@@ -24,6 +24,13 @@ function loadBookmarks() {
 function createBookmarkElement(bookmark, index) {
   const div = document.createElement("div");
   div.className = "bookmark";
+  div.dataset.index = index;
+
+  const dragHandle = document.createElement("div");
+  dragHandle.className = "drag-handle";
+  dragHandle.innerHTML = "&#9776;"; // Unicode for hamburger icon
+  dragHandle.draggable = true;
+  div.appendChild(dragHandle);
 
   const bookmarkInfo = document.createElement("div");
   bookmarkInfo.className = "bookmark-info";
@@ -39,8 +46,20 @@ function createBookmarkElement(bookmark, index) {
 
   const a = document.createElement("a");
   a.href = "#";
-  a.textContent = bookmark.address;
-  a.title = bookmark.address; // Add title for full address on hover
+  if (bookmark.name) {
+    const nameSpan = document.createElement("span");
+    nameSpan.className = "custom-name";
+    nameSpan.textContent = bookmark.name;
+    a.appendChild(nameSpan);
+
+    const addressSpan = document.createElement("span");
+    addressSpan.className = "address";
+    addressSpan.textContent = ` (${bookmark.address})`;
+    a.appendChild(addressSpan);
+  } else {
+    a.textContent = bookmark.address;
+  }
+  a.title = bookmark.address;
   a.addEventListener("click", function (e) {
     e.preventDefault();
     const url = bookmark.address.startsWith("http")
@@ -73,7 +92,101 @@ function createBookmarkElement(bookmark, index) {
 
   checkStatus(bookmark.address, status);
 
+  // Add drag and drop event listeners
+  dragHandle.addEventListener("dragstart", dragStart);
+  div.addEventListener("dragover", dragOver);
+  div.addEventListener("dragleave", dragLeave);
+  div.addEventListener("drop", drop);
+  div.addEventListener("dragend", dragEnd);
+
   return div;
+}
+
+function dragStart(e) {
+  e.dataTransfer.setData("text/plain", e.target.parentNode.dataset.index);
+  e.target.parentNode.classList.add("dragging");
+
+  const dragImage = e.target.parentNode.cloneNode(true);
+  dragImage.style.width = `${e.target.parentNode.offsetWidth}px`;
+  dragImage.style.height = `${e.target.parentNode.offsetHeight}px`;
+  dragImage.style.opacity = "0.7";
+  dragImage.classList.add("drag-image");
+
+  const statusElement = dragImage.querySelector(".status");
+  if (statusElement) {
+    statusElement.remove();
+  }
+
+  dragImage.style.position = "absolute";
+  dragImage.style.top = "-1000px";
+  document.body.appendChild(dragImage);
+
+  e.dataTransfer.setDragImage(dragImage, 0, 0);
+
+  setTimeout(() => {
+    document.body.removeChild(dragImage);
+  }, 0);
+}
+
+function dragOver(e) {
+  e.preventDefault();
+  const draggingElement = document.querySelector(".dragging");
+  const currentElement = e.target.closest(".bookmark");
+  if (currentElement && draggingElement !== currentElement) {
+    const container = document.getElementById("bookmarks-container");
+    const afterElement = getDragAfterElement(container, e.clientY);
+    if (afterElement) {
+      container.insertBefore(draggingElement, afterElement);
+    } else {
+      container.appendChild(draggingElement);
+    }
+  }
+}
+
+function dragLeave(e) {
+  e.preventDefault();
+}
+
+function drop(e) {
+  e.preventDefault();
+}
+
+function dragEnd(e) {
+  e.target.parentNode.classList.remove("dragging");
+  saveNewOrder();
+}
+
+function getDragAfterElement(container, y) {
+  const draggableElements = [
+    ...container.querySelectorAll(".bookmark:not(.dragging)"),
+  ];
+  return draggableElements.reduce(
+    (closest, child) => {
+      const box = child.getBoundingClientRect();
+      const offset = y - box.top - box.height / 2;
+      if (offset < 0 && offset > closest.offset) {
+        return { offset: offset, element: child };
+      } else {
+        return closest;
+      }
+    },
+    { offset: Number.NEGATIVE_INFINITY }
+  ).element;
+}
+
+function saveNewOrder() {
+  const bookmarkElements = document.querySelectorAll(".bookmark");
+  const newOrder = Array.from(bookmarkElements).map((el) =>
+    parseInt(el.dataset.index)
+  );
+
+  chrome.storage.sync.get(["bookmarks"], function (result) {
+    const bookmarks = result.bookmarks || [];
+    const reorderedBookmarks = newOrder.map((index) => bookmarks[index]);
+    chrome.storage.sync.set({ bookmarks: reorderedBookmarks }, function () {
+      loadBookmarks();
+    });
+  });
 }
 
 function showError(message) {
@@ -134,21 +247,22 @@ function showDeleteConfirmation(index) {
 
 function addBookmark(e) {
   e.preventDefault();
+  const name = document.getElementById("name").value;
   const address = document.getElementById("address").value;
   const logo = document.getElementById("logo").value;
 
   chrome.storage.sync.get(["bookmarks"], function (result) {
     const bookmarks = result.bookmarks || [];
 
-    // Check for duplicate address
     if (bookmarks.some((bookmark) => bookmark.address === address)) {
       showError("This address already exists!");
       return;
     }
 
-    bookmarks.push({ address, logo });
+    bookmarks.push({ name, address, logo });
     chrome.storage.sync.set({ bookmarks }, function () {
       loadBookmarks();
+      document.getElementById("name").value = "";
       document.getElementById("address").value = "";
       document.getElementById("logo").value = "";
     });
@@ -159,6 +273,7 @@ function startEdit(index) {
   chrome.storage.sync.get(["bookmarks"], function (result) {
     const bookmarks = result.bookmarks || [];
     const bookmark = bookmarks[index];
+    document.getElementById("editName").value = bookmark.name || "";
     document.getElementById("editAddress").value = bookmark.address;
     document.getElementById("editLogo").value = bookmark.logo || "";
     document.getElementById("editForm").classList.add("active");
@@ -168,13 +283,13 @@ function startEdit(index) {
 }
 
 function saveEditedBookmark() {
+  const name = document.getElementById("editName").value;
   const address = document.getElementById("editAddress").value;
   const logo = document.getElementById("editLogo").value;
 
   chrome.storage.sync.get(["bookmarks"], function (result) {
     const bookmarks = result.bookmarks || [];
 
-    // Check for duplicate address, excluding the current bookmark
     if (
       bookmarks.some(
         (bookmark, index) =>
@@ -185,7 +300,7 @@ function saveEditedBookmark() {
       return;
     }
 
-    bookmarks[currentEditIndex] = { address, logo };
+    bookmarks[currentEditIndex] = { name, address, logo };
     chrome.storage.sync.set({ bookmarks }, function () {
       loadBookmarks();
       cancelEdit();
@@ -214,12 +329,10 @@ function checkStatus(address, statusElement) {
   if (address.startsWith("http://") || address.startsWith("https://")) {
     url = address;
   } else if (address.includes("://")) {
-    // For other protocols, we can't check status directly
     statusElement.classList.add("unknown");
     statusElement.classList.remove("online", "offline");
     return;
   } else {
-    // Assume http:// if no protocol is specified
     url = "http://" + address;
   }
 
@@ -235,7 +348,6 @@ function checkStatus(address, statusElement) {
       statusElement.classList.remove("offline", "unknown");
     })
     .catch(() => {
-      // If http fails, try https
       if (!address.startsWith("https://")) {
         fetch("https://" + address.replace(/^https?:\/\//, ""), {
           mode: "no-cors",
