@@ -45,8 +45,21 @@ h1 {
   border-bottom: 1px solid var(--border-color);
   padding: 15px 0;
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
+  transition: background-color 0.3s ease;
+}
+
+.drag-handle {
+  cursor: move;
+  padding: 0 10px;
+  font-size: 20px;
+  color: var(--border-color);
+  transition: color 0.3s ease;
+}
+
+.drag-handle:hover {
+  color: var(--text-color);
 }
 
 .bookmark-info {
@@ -202,4 +215,25 @@ button:hover {
 
 .confirm-dialog button.delete:hover {
   background-color: #d32f2f;
+}
+
+#bookmarks-container {
+  min-height: 50px; /* Ensures container is always droppable */
+}
+
+.bookmark.dragging {
+  opacity: 0.7;
+  background-color: var(--button-bg);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+.bookmark.dragging .drag-handle {
+  color: var(--text-color);
+}
+
+.drag-image {
+  opacity: 0.7;
+  background-color: var(--button-bg);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  pointer-events: none;
 }
