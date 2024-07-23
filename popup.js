@@ -12,11 +12,11 @@ document.addEventListener("DOMContentLoaded", function () {
 function loadBookmarks() {
   chrome.storage.sync.get(["bookmarks"], function (result) {
     const bookmarks = result.bookmarks || [];
-    const bookmarksDiv = document.getElementById("bookmarks");
-    bookmarksDiv.innerHTML = "";
+    const bookmarksContainer = document.getElementById("bookmarks-container");
+    bookmarksContainer.innerHTML = "";
     bookmarks.forEach(function (bookmark, index) {
       const div = createBookmarkElement(bookmark, index);
-      bookmarksDiv.appendChild(div);
+      bookmarksContainer.appendChild(div);
     });
   });
 }
@@ -24,6 +24,8 @@ function loadBookmarks() {
 function createBookmarkElement(bookmark, index) {
   const div = document.createElement("div");
   div.className = "bookmark";
+  div.draggable = true;
+  div.dataset.index = index;
 
   const bookmarkInfo = document.createElement("div");
   bookmarkInfo.className = "bookmark-info";
@@ -40,7 +42,7 @@ function createBookmarkElement(bookmark, index) {
   const a = document.createElement("a");
   a.href = "#";
   a.textContent = bookmark.address;
-  a.title = bookmark.address; // Add title for full address on hover
+  a.title = bookmark.address;
   a.addEventListener("click", function (e) {
     e.preventDefault();
     const url = bookmark.address.startsWith("http")
@@ -73,7 +75,80 @@ function createBookmarkElement(bookmark, index) {
 
   checkStatus(bookmark.address, status);
 
+  // Add drag and drop event listeners
+  div.addEventListener("dragstart", dragStart);
+  div.addEventListener("dragover", dragOver);
+  div.addEventListener("dragleave", dragLeave);
+  div.addEventListener("drop", drop);
+  div.addEventListener("dragend", dragEnd);
+
   return div;
+}
+
+function dragStart(e) {
+  e.dataTransfer.setData("text/plain", e.target.dataset.index);
+  e.target.classList.add("dragging");
+}
+
+function dragOver(e) {
+  e.preventDefault();
+  const draggingElement = document.querySelector(".dragging");
+  const currentElement = e.target.closest(".bookmark");
+  if (currentElement && draggingElement !== currentElement) {
+    const container = document.getElementById("bookmarks-container");
+    const afterElement = getDragAfterElement(container, e.clientY);
+    if (afterElement) {
+      container.insertBefore(draggingElement, afterElement);
+    } else {
+      container.appendChild(draggingElement);
+    }
+  }
+}
+
+function dragLeave(e) {
+  e.preventDefault();
+}
+
+function drop(e) {
+  e.preventDefault();
+}
+
+function dragEnd(e) {
+  e.target.classList.remove("dragging");
+  saveNewOrder();
+}
+
+function getDragAfterElement(container, y) {
+  const draggableElements = [
+    ...container.querySelectorAll(".bookmark:not(.dragging)"),
+  ];
+  return draggableElements.reduce(
+    (closest, child) => {
+      const box = child.getBoundingClientRect();
+      const offset = y - box.top - box.height / 2;
+      if (offset < 0 && offset > closest.offset) {
+        return { offset: offset, element: child };
+      } else {
+        return closest;
+      }
+    },
+    { offset: Number.NEGATIVE_INFINITY }
+  ).element;
+}
+
+function saveNewOrder() {
+  const bookmarkElements = document.querySelectorAll(".bookmark");
+  const newOrder = Array.from(bookmarkElements).map((el) =>
+    parseInt(el.dataset.index)
+  );
+
+  chrome.storage.sync.get(["bookmarks"], function (result) {
+    const bookmarks = result.bookmarks || [];
+    const reorderedBookmarks = newOrder.map((index) => bookmarks[index]);
+    chrome.storage.sync.set({ bookmarks: reorderedBookmarks }, function () {
+      loadBookmarks(); // Reload bookmarks to update indices
+    });
+  });
 }
 
 function showError(message) {

@@ -12,7 +12,9 @@
 <body>
     <h1>Localhost Bookmarks</h1>
 
-    <div id="bookmarks"></div>
+    <div id="bookmarks-container">
+        <!-- Bookmarks will be dynamically inserted here -->
+    </div>
 
     <form id="addForm">
         <input type="text" id="address" placeholder="Enter localhost address" required>
@@ -24,8 +26,8 @@
         <h2>Edit Bookmark</h2>
         <input type="text" id="editAddress" placeholder="Enter localhost address" required>
         <input type="text" id="editLogo" placeholder="Enter logo URL (optional)">
-        <button type="button" id="saveEdit">Save</button>
-        <button type="button" id="cancelEdit">Cancel</button>
+        <button id="saveEdit">Save</button>
+        <button id="cancelEdit">Cancel</button>
     </div>
 
     <script src="popup.js"></script>

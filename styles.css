@@ -47,6 +47,13 @@ h1 {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  cursor: move;
+  transition: background-color 0.3s ease;
+}
+
+.bookmark.dragging {
+  opacity: 0.5;
+  background-color: var(--button-bg);
 }
 
 .bookmark-info {
@@ -202,4 +209,8 @@ button:hover {
 
 .confirm-dialog button.delete:hover {
   background-color: #d32f2f;
+}
+
+#bookmarks-container {
+  min-height: 50px; /* Ensures container is always droppable */
 }
