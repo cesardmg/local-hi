@@ -182,14 +182,47 @@ function deleteBookmark(index) {
 }
 
 function checkStatus(address, statusElement) {
-  const url = address.startsWith("http") ? address : "http://" + address;
-  fetch(url, { mode: "no-cors" })
+  let url;
+  if (address.startsWith("http://") || address.startsWith("https://")) {
+    url = address;
+  } else if (address.includes("://")) {
+    // For other protocols, we can't check status directly
+    statusElement.classList.add("unknown");
+    statusElement.classList.remove("online", "offline");
+    return;
+  } else {
+    // Assume http:// if no protocol is specified
+    url = "http://" + address;
+  }
+
+  fetch(url, {
+    mode: "no-cors",
+    cache: "no-cache",
+    headers: {
+      "Cache-Control": "no-cache",
+    },
+  })
     .then(() => {
       statusElement.classList.add("online");
-      statusElement.classList.remove("offline");
+      statusElement.classList.remove("offline", "unknown");
     })
     .catch(() => {
-      statusElement.classList.add("offline");
-      statusElement.classList.remove("online");
+      // If http fails, try https
+      if (!address.startsWith("https://")) {
+        fetch("https://" + address.replace(/^https?:\/\//, ""), {
+          mode: "no-cors",
+        })
+          .then(() => {
+            statusElement.classList.add("online");
+            statusElement.classList.remove("offline", "unknown");
+          })
+          .catch(() => {
+            statusElement.classList.add("offline");
+            statusElement.classList.remove("online", "unknown");
+          });
+      } else {
+        statusElement.classList.add("offline");
+        statusElement.classList.remove("online", "unknown");
+      }
     });
 }

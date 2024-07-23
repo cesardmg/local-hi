@@ -72,6 +72,10 @@ h1 {
   background-color: #f44336;
 }
 
+.unknown {
+  background-color: #ffa500;
+}
+
 .bookmark-info img {
   width: 20px;
   height: 20px;
