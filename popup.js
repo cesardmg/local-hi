@@ -94,6 +94,32 @@ function dragStart(e) {
   // Set the dragged element to the parent bookmark div
   e.dataTransfer.setData("text/plain", e.target.parentNode.dataset.index);
   e.target.parentNode.classList.add("dragging");
+
+  // Create a custom drag image
+  const dragImage = e.target.parentNode.cloneNode(true);
+  dragImage.style.width = `${e.target.parentNode.offsetWidth}px`; // Set the width to match the original element
+  dragImage.style.height = `${e.target.parentNode.offsetHeight}px`; // Set the height to match the original element
+  dragImage.style.opacity = "0.7";
+  dragImage.classList.add("drag-image");
+
+  // Remove the status indicator from the drag image
+  const statusElement = dragImage.querySelector(".status");
+  if (statusElement) {
+    statusElement.remove();
+  }
+
+  // Hide the drag image element
+  dragImage.style.position = "absolute";
+  dragImage.style.top = "-1000px";
+  document.body.appendChild(dragImage);
+
+  // Set the custom drag image
+  e.dataTransfer.setDragImage(dragImage, 0, 0);
+
+  // Remove the drag image element after the drag operation
+  setTimeout(() => {
+    document.body.removeChild(dragImage);
+  }, 0);
 }
 
 function dragOver(e) {
@@ -120,7 +146,7 @@ function drop(e) {
 }
 
 function dragEnd(e) {
-  e.target.classList.remove("dragging");
+  e.target.parentNode.classList.remove("dragging");
   saveNewOrder();
 }
 
