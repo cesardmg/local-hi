@@ -253,6 +253,12 @@ button:hover {
   min-height: 50px; /* Ensures container is always droppable */
 }
 
+#bookmarks-container:empty {
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+}
+
 .bookmark.dragging {
   opacity: 0.7;
   background-color: var(--button-bg);
