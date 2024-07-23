@@ -45,15 +45,21 @@ h1 {
   border-bottom: 1px solid var(--border-color);
   padding: 15px 0;
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
-  cursor: move;
   transition: background-color 0.3s ease;
 }
 
-.bookmark.dragging {
-  opacity: 0.5;
-  background-color: var(--button-bg);
+.drag-handle {
+  cursor: move;
+  padding: 0 10px;
+  font-size: 20px;
+  color: var(--border-color);
+  transition: color 0.3s ease;
+}
+
+.drag-handle:hover {
+  color: var(--text-color);
 }
 
 .bookmark-info {
@@ -213,4 +219,13 @@ button:hover {
 
 #bookmarks-container {
   min-height: 50px; /* Ensures container is always droppable */
+}
+
+.bookmark.dragging {
+  opacity: 0.5;
+  background-color: var(--button-bg);
+}
+
+.bookmark.dragging .drag-handle {
+  color: var(--text-color);
 }

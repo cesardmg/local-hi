@@ -24,8 +24,13 @@ function loadBookmarks() {
 function createBookmarkElement(bookmark, index) {
   const div = document.createElement("div");
   div.className = "bookmark";
-  div.draggable = true;
   div.dataset.index = index;
+
+  const dragHandle = document.createElement("div");
+  dragHandle.className = "drag-handle";
+  dragHandle.innerHTML = "&#9776;"; // Unicode for hamburger icon
+  dragHandle.draggable = true;
+  div.appendChild(dragHandle);
 
   const bookmarkInfo = document.createElement("div");
   bookmarkInfo.className = "bookmark-info";
@@ -75,8 +80,8 @@ function createBookmarkElement(bookmark, index) {
 
   checkStatus(bookmark.address, status);
 
-  // Add drag and drop event listeners
-  div.addEventListener("dragstart", dragStart);
+  // Add drag and drop event listeners to the drag handle
+  dragHandle.addEventListener("dragstart", dragStart);
   div.addEventListener("dragover", dragOver);
   div.addEventListener("dragleave", dragLeave);
   div.addEventListener("drop", drop);
@@ -86,8 +91,9 @@ function createBookmarkElement(bookmark, index) {
 }
 
 function dragStart(e) {
-  e.dataTransfer.setData("text/plain", e.target.dataset.index);
-  e.target.classList.add("dragging");
+  // Set the dragged element to the parent bookmark div
+  e.dataTransfer.setData("text/plain", e.target.parentNode.dataset.index);
+  e.target.parentNode.classList.add("dragging");
 }
 
 function dragOver(e) {
