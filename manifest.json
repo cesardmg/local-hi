@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Localhost Bookmarks",
+  "name": "Local Hi",
   "version": "1.0",
   "description": "Manage and access localhost addresses easily",
   "permissions": ["storage", "tabs"],
